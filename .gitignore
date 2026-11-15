@@ -1,9 +1,9 @@
-﻿.gradle/
+.gradle/
 build/
 local.properties
 .idea/
 *.iml
 .DS_Store
-metl-api/
 captures/
 .kotlin/
+metl-api/
