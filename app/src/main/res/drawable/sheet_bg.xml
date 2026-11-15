@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="390dp"
+    android:height="570dp"
+    android:viewportWidth="390"
+    android:viewportHeight="570">
+    <path
+        android:fillColor="@color/login_sheet"
+        android:pathData="M195,0 L390,114 L390,570 L0,570 L0,114 Z" />
+</vector>

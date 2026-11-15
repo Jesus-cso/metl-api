@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="52dp"
+    android:height="52dp"
+    android:viewportWidth="52"
+    android:viewportHeight="52">
+
+    <!-- Pencas caídas (las de atrás) -->
+    <path
+        android:fillColor="@color/login_brand"
+        android:fillAlpha="0.12"
+        android:pathData="M26,44 Q13,46.8 3,38 Q16,35.2 26,44 Z M26,44 Q39,46.8 49,38 Q36,35.2 26,44 Z"
+        android:strokeColor="@color/login_brand"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.8" />
+
+    <!-- Pencas exteriores -->
+    <path
+        android:fillColor="@color/login_brand"
+        android:fillAlpha="0.18"
+        android:pathData="M26,44 Q9.7,38.5 5,22 Q21.3,27.5 26,44 Z M26,44 Q42.3,38.5 47,22 Q30.7,27.5 26,44 Z"
+        android:strokeColor="@color/login_brand"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.8" />
+
+    <!-- Pencas interiores -->
+    <path
+        android:fillColor="@color/login_brand"
+        android:fillAlpha="0.25"
+        android:pathData="M26,44 Q12.5,30.2 14,11 Q27.5,24.8 26,44 Z M26,44 Q39.5,30.2 38,11 Q24.5,24.8 26,44 Z"
+        android:strokeColor="@color/login_brand"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.8" />
+
+    <!-- Penca central (el cogollo) -->
+    <path
+        android:fillColor="@color/login_brand"
+        android:fillAlpha="0.4"
+        android:pathData="M26,44 Q19.5,24 26,5 Q32.5,24 26,44 Z"
+        android:strokeColor="@color/login_brand"
+        android:strokeLineJoin="round"
+        android:strokeWidth="1.8" />
+</vector>
