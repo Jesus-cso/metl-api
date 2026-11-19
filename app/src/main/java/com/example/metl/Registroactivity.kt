@@ -31,7 +31,7 @@ class RegistroActivity : AppCompatActivity() {
             val error = when {
                 nombre.isBlank() -> "Escribe tu nombre"
                 !Patterns.EMAIL_ADDRESS.matcher(correo).matches() -> "Escribe un correo válido"
-                pass.length < 4 -> "La contraseña debe tener al menos 4 caracteres"
+                pass.length < 8 -> "La contraseña debe tener al menos 8 caracteres"
                 pass != pass2 -> "Las contraseñas no coinciden"
                 else -> null
             }

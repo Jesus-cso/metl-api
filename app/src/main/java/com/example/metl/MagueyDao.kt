@@ -16,13 +16,13 @@ class MagueyDao(ctx: Context) {
                 val o = arr.getJSONObject(i)
                 val v = ContentValues().apply {
                     put("codigo", o.getString("id"))
-                    put("variedad", o.optString("variedad"))
+                    put("variedad", o.texto("variedad"))
                     put("edad_anios", o.optInt("edadAnios"))
-                    put("ubicacion", o.optString("ubicacion"))
+                    put("ubicacion", o.texto("ubicacion"))
                     if (!o.isNull("humedad")) put("humedad", o.getDouble("humedad"))
                     if (!o.isNull("temperatura")) put("temperatura", o.getDouble("temperatura"))
-                    put("estado", o.optString("estado"))
-                    put("nota", o.optString("nota"))
+                    put("estado", o.texto("estado"))
+                    put("nota", o.texto("nota"))
                 }
                 db.insert("magueyes", null, v)
             }
@@ -30,6 +30,33 @@ class MagueyDao(ctx: Context) {
         } finally {
             db.endTransaction()
         }
+    }
+
+    fun listar(lecturas: LecturaDao): List<Maguey> {
+        val out = mutableListOf<Maguey>()
+        helper.readableDatabase.rawQuery(
+            "SELECT codigo, variedad, edad_anios, ubicacion, humedad, temperatura, estado, nota " +
+                    "FROM magueyes ORDER BY codigo", null
+        ).use { c ->
+            while (c.moveToNext()) {
+                val codigo = c.getString(0)
+                out.add(
+                    Maguey(
+                        id = codigo,
+                        variedad = c.getString(1) ?: "",
+                        edadAnios = c.getInt(2),
+                        ubicacion = c.getString(3) ?: "",
+                        humedad = if (c.isNull(4)) 0 else c.getDouble(4).toInt(),
+                        temperatura = if (c.isNull(5)) 0 else c.getDouble(5).toInt(),
+                        estado = estadoDe(c.getString(6)),
+                        nota = c.getString(7) ?: "",
+                        historialHumedad = lecturas.ultimasHumedades(codigo, 9),
+                        recomendacion = null
+                    )
+                )
+            }
+        }
+        return out
     }
 
     fun listarTexto(): List<String> {
@@ -44,5 +71,14 @@ class MagueyDao(ctx: Context) {
             }
         }
         return out
+    }
+}
+
+private fun estadoDe(texto: String?): EstadoMaguey {
+    val t = texto.orEmpty().lowercase()
+    return when {
+        "capar" in t -> EstadoMaguey.CAPAR_PRONTO
+        "riego" in t -> EstadoMaguey.RIEGO_BAJO
+        else -> EstadoMaguey.EN_DESARROLLO
     }
 }
