@@ -1,4 +1,5 @@
 package com.example.metl
+
 enum class ChipTipo { OK, WARN, BAD }
 
 enum class EstadoMaguey(val label: String, val chip: ChipTipo) {
@@ -37,5 +38,7 @@ data class Resumen(
 )
 
 data class Paso(val titulo: String, val detalle: String)
+
 data class Pedido(val cliente: String, val detalle: String, val estado: EstadoPedido)
+
 data class Lote(val codigo: String, val pasos: List<Paso>, val pedidos: List<Pedido>)

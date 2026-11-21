@@ -1,4 +1,5 @@
 package com.example.metl
+import android.content.Context
 import kotlinx.coroutines.delay
 
 interface MetlRepository {
@@ -8,10 +9,23 @@ interface MetlRepository {
     suspend fun resumen(): Resumen
     suspend fun magueyes(): List<Maguey>
     suspend fun lote(): Lote
+    suspend fun refrescar() {}
 }
 
 object MetlGraph {
-    val repo: MetlRepository = FakeMetlRepository()
+    // true = datos de ejemplo (sin API). false = servidor real.
+    private const val USAR_DATOS_DE_EJEMPLO = false
+
+    lateinit var repo: MetlRepository
+        private set
+
+    fun init(context: Context) {
+        repo = if (USAR_DATOS_DE_EJEMPLO) {
+            FakeMetlRepository()
+        } else {
+            ApiRepository(context.applicationContext)
+        }
+    }
 }
 
 class FakeMetlRepository : MetlRepository {
@@ -28,7 +42,6 @@ class FakeMetlRepository : MetlRepository {
 
     override suspend fun registrar(nombre: String, email: String, pass: String, rol: Rol): Result<Rol> {
         delay(600)
-        // Prueba: aquí iría la llamada a tu servidor para crear la cuenta.
         return Result.success(rol)
     }
 

@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Solo para desarrollo: HTTP permitido unicamente a estas IPs.
+         10.0.2.2 = emulador. 192.168.0.109 = IP de la PC para el celular real. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">192.168.0.109</domain>
+    </domain-config>
+</network-security-config>

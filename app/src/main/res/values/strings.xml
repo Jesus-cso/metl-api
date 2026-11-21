@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Metl</string>
+    <string name="disponibles">%1$d disponibles</string>
+    <string name="agotado">Agotado</string>
+    <string name="pedido_titulo">Pedido #%1$d · %2$s</string>
+    <string name="publicando">Publicando…</string>
+    <string name="publicar">Publicar</string>
 </resources>

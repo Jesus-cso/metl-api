@@ -27,4 +27,16 @@ class LecturaDao(ctx: Context) {
             db.endTransaction()
         }
     }
+
+    // Las últimas n humedades en orden cronológico (de la más vieja a la más nueva)
+    fun ultimasHumedades(codigo: String, n: Int): List<Int> {
+        val out = mutableListOf<Int>()
+        helper.readableDatabase.rawQuery(
+            "SELECT humedad FROM lecturas WHERE maguey_codigo = ? AND humedad IS NOT NULL " +
+                    "ORDER BY creado_en DESC LIMIT $n", arrayOf(codigo)
+        ).use { c ->
+            while (c.moveToNext()) out.add(c.getDouble(0).toInt())
+        }
+        return out.reversed()
+    }
 }

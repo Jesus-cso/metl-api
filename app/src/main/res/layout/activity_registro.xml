@@ -95,7 +95,7 @@
             android:layout_marginBottom="18dp"
             android:autofillHints="newPassword"
             android:background="@drawable/bg_underline"
-            android:hint="Mínimo 4 caracteres"
+            android:hint="Mínimo 8 caracteres"
             android:inputType="textPassword"
             android:paddingTop="6dp"
             android:paddingBottom="10dp"
@@ -158,6 +158,95 @@
                 android:text="Productor"
                 android:textColor="@color/login_ink" />
         </RadioGroup>
+
+        <LinearLayout
+            android:id="@+id/llNegocio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nombre del negocio"
+                android:textColor="@color/login_ink"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etNegocio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="18dp"
+                android:background="@drawable/bg_underline"
+                android:hint="Ej. Pulquer&#237;a Los Magueyes"
+                android:inputType="textCapWords"
+                android:paddingTop="6dp"
+                android:paddingBottom="10dp"
+                android:singleLine="true"
+                android:textColor="@color/login_ink"
+                android:textColorHint="@color/login_muted"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Municipio"
+                android:textColor="@color/login_ink"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etMunicipio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="18dp"
+                android:background="@drawable/bg_underline"
+                android:hint="Ej. Tulancingo"
+                android:inputType="textCapWords"
+                android:paddingTop="6dp"
+                android:paddingBottom="10dp"
+                android:singleLine="true"
+                android:textColor="@color/login_ink"
+                android:textColorHint="@color/login_muted"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ubicaci&#243;n de tu parcela (Google Maps: mant&#233;n presionado el punto)"
+                android:textColor="@color/login_ink"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etLatitud"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="18dp"
+                android:background="@drawable/bg_underline"
+                android:hint="Latitud, ej. 20.0833"
+                android:inputType="numberSigned|numberDecimal"
+                android:paddingTop="6dp"
+                android:paddingBottom="10dp"
+                android:singleLine="true"
+                android:textColor="@color/login_ink"
+                android:textColorHint="@color/login_muted"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/etLongitud"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="18dp"
+                android:background="@drawable/bg_underline"
+                android:hint="Longitud, ej. -98.3667"
+                android:inputType="numberSigned|numberDecimal"
+                android:paddingTop="6dp"
+                android:paddingBottom="10dp"
+                android:singleLine="true"
+                android:textColor="@color/login_ink"
+                android:textColorHint="@color/login_muted"
+                android:textSize="16sp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvErrorR"

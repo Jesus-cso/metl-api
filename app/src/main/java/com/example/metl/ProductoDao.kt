@@ -1,4 +1,5 @@
-package com.example.metl;
+package com.example.metl
+
 import android.content.ContentValues
 import android.content.Context
 import org.json.JSONArray
@@ -16,11 +17,11 @@ class ProductoDao(ctx: Context) {
                 val v = ContentValues().apply {
                     put("id", o.getInt("id"))
                     put("nombre", o.getString("nombre"))
-                    put("descripcion", o.optString("descripcion"))
+                    put("descripcion", o.texto("descripcion"))
                     put("precio", o.getDouble("precio"))
                     put("stock", o.getDouble("stock"))
-                    put("proveedor", o.optString("proveedor"))
-                    put("municipio", o.optString("municipio"))
+                    put("proveedor", o.texto("proveedor"))
+                    put("municipio", o.texto("municipio"))
                 }
                 db.insert("productos", null, v)
             }
@@ -28,6 +29,33 @@ class ProductoDao(ctx: Context) {
         } finally {
             db.endTransaction()
         }
+    }
+
+    fun listar(): List<Producto> {
+        val out = mutableListOf<Producto>()
+        helper.readableDatabase.rawQuery(
+            "SELECT id, nombre, descripcion, precio, stock, proveedor, municipio " +
+                    "FROM productos ORDER BY nombre", null
+        ).use { c ->
+            while (c.moveToNext()) {
+                val productor = listOf(c.getString(5), c.getString(6))
+                    .filter { !it.isNullOrBlank() }
+                    .joinToString(" · ")
+                out.add(
+                    Producto(
+                        id = c.getInt(0).toString(),
+                        nombre = c.getString(1),
+                        descripcion = c.getString(2) ?: "",
+                        presentacion = "Unidad",   // la tabla aún no tiene esta columna
+                        precio = c.getDouble(3),
+                        disponibles = c.getDouble(4).toInt(),
+                        lote = "—",                // ni esta
+                        productor = productor
+                    )
+                )
+            }
+        }
+        return out
     }
 
     fun listarTexto(): List<String> {
