@@ -6,3 +6,8 @@ local.properties
 .DS_Store
 captures/
 .kotlin/
+
+metl-api/.env
+metl-api/node_modules/
+local.properties
+lote*.txt

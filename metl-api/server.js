@@ -18,7 +18,11 @@ app.use('/auth', require('./routes/auth'));
 app.use('/proveedor', require('./routes/proveedor'));
 app.use('/lotes', require('./routes/lotes'));
 app.use('/productos', require('./routes/productos'));
+app.use('/productos', require('./routes/fotos'));
+app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
 app.use('/proveedores', require('./routes/proveedores'));
+app.use('/pedidos', require('./routes/pedidos'));
+app.use('/sensores', require('./routes/sensores'));
 
 app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
 

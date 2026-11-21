@@ -7,7 +7,7 @@ const router = express.Router();
 // GET /productos/proveedor  -> Ver los productos del proveedor autenticado
 router.get('/proveedor', auth, soloRol('proveedor'), proveedorActual, async (req, res) => {
   const [rows] = await db.query(
-    'SELECT id, nombre, descripcion, precio, stock, activo FROM productos WHERE proveedor_id = ? ORDER BY id DESC',
+    'SELECT id, nombre, descripcion, precio, stock, activo, foto_url FROM productos WHERE proveedor_id = ? ORDER BY id DESC',
     [req.proveedorId]
   );
   res.json(rows);
@@ -53,7 +53,7 @@ router.put('/:id', auth, soloRol('proveedor'), proveedorActual, async (req, res)
 // GET /productos/publicos  -> Catálogo público para los clientes
 router.get('/publicos', auth, soloRol('cliente'), async (req, res) => {
   const [rows] = await db.query(
-    `SELECT p.id, p.nombre, p.descripcion, p.precio, p.stock, pr.nombre_negocio AS proveedor, pr.municipio
+    `SELECT p.id, p.nombre, p.descripcion, p.precio, p.stock, p.proveedor_id, p.foto_url, pr.nombre_negocio AS proveedor, pr.municipio
        FROM productos p
        JOIN proveedores pr ON pr.id = p.proveedor_id
       WHERE p.activo = 1 AND p.stock > 0

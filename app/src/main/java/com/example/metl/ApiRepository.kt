@@ -11,8 +11,8 @@ import java.net.URL
 class ApiRepository(private val ctx: Context) : MetlRepository {
 
     companion object {
-        // Emulador: 10.0.2.2 es tu PC. Celular real: http://192.168.0.109:3000
-        const val BASE_URL = "http://192.168.100.3:3000"
+        // Emulador: 10.0.2.2 es tu PC. Celular real: la IP de tu PC (ipconfig)
+        const val BASE_URL = "http://192.168.0.104:3100"
     }
 
     private val productoDao = ProductoDao(ctx)
@@ -79,10 +79,10 @@ class ApiRepository(private val ctx: Context) : MetlRepository {
                     // PROVISIONAL: el servidor exige datos del negocio y la pantalla aún no los pide.
                     body.put(
                         "negocio", JSONObject()
-                            .put("nombre_negocio", nombre.trim())
-                            .put("municipio", "Tulancingo")
-                            .put("latitud", 20.0833)
-                            .put("longitud", -98.3667)
+                            .put("nombre_negocio", NegocioPendiente.nombre.ifBlank { nombre.trim() })
+                            .put("municipio", NegocioPendiente.municipio.ifBlank { "Tulancingo" })
+                            .put("latitud", NegocioPendiente.latitud)
+                            .put("longitud", NegocioPendiente.longitud)
                             .put("radio_km", 10)
                     )
                 }
@@ -159,7 +159,9 @@ class ApiRepository(private val ctx: Context) : MetlRepository {
         o.optJSONArray("pedidos")?.let { a ->
             for (i in 0 until a.length()) {
                 val p = a.getJSONObject(i)
-                val estado = if (p.texto("estado") == "pendiente")
+                val est = p.texto("estado")
+                if (est == "rechazado" || est == "cancelado") continue   // un pedido rechazado ya no se ve como confirmado
+                val estado = if (est == "pendiente")
                     EstadoPedido.POR_ACEPTAR else EstadoPedido.CONFIRMADO
                 pedidos.add(Pedido(p.texto("cliente"), p.texto("detalle"), estado))
             }
@@ -170,4 +172,176 @@ class ApiRepository(private val ctx: Context) : MetlRepository {
     override suspend fun refrescar() {
         productos(); magueyes()
     }
-}
+
+    // ---------- Pedidos ----------
+    private fun parsePedidos(texto: String, campoContraparte: String): List<PedidoApi> {
+        val a = JSONArray(texto)
+        val salida = mutableListOf<PedidoApi>()
+        for (i in 0 until a.length()) {
+            val p = a.getJSONObject(i)
+            val items = mutableListOf<PedidoItemApi>()
+            p.optJSONArray("items")?.let { ia ->
+                for (j in 0 until ia.length()) {
+                    val x = ia.getJSONObject(j)
+                    items.add(PedidoItemApi(x.texto("nombre"), x.optDouble("cantidad"), x.optDouble("precio_unit")))
+                }
+            }
+            salida.add(
+                PedidoApi(
+                    id = p.getInt("id"),
+                    estado = p.texto("estado"),
+                    nota = if (p.isNull("nota")) "" else p.texto("nota"),
+                    contraparte = p.texto(campoContraparte),
+                    items = items
+                )
+            )
+        }
+        return salida
+    }
+
+    suspend fun crearPedido(proveedorId: Int, nota: String, items: List<Pair<Int, Double>>): Result<Int> =
+        withContext(Dispatchers.IO) {
+            try {
+                val arr = JSONArray()
+                items.forEach { (productoId, cantidad) ->
+                    arr.put(JSONObject().put("producto_id", productoId).put("cantidad", cantidad))
+                }
+                val body = JSONObject()
+                    .put("proveedor_id", proveedorId)
+                    .put("nota", nota)
+                    .put("items", arr)
+                Result.success(JSONObject(request("POST", "/pedidos", body)).getInt("id"))
+            } catch (e: Exception) {
+                Result.failure(Exception(e.message ?: "No se pudo crear el pedido"))
+            }
+        }
+
+    suspend fun misPedidos(): Result<List<PedidoApi>> = withContext(Dispatchers.IO) {
+        try {
+            Result.success(parsePedidos(request("GET", "/pedidos/mios"), "proveedor"))
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "No se pudieron cargar tus pedidos"))
+        }
+    }
+
+    suspend fun pedidosRecibidos(): Result<List<PedidoApi>> = withContext(Dispatchers.IO) {
+        try {
+            Result.success(parsePedidos(request("GET", "/pedidos/recibidos"), "cliente"))
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "No se pudieron cargar los pedidos"))
+        }
+    }
+
+    suspend fun cambiarEstado(id: Int, estado: String): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            request("POST", "/pedidos/$id/estado", JSONObject().put("estado", estado))
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "No se pudo actualizar el pedido"))
+        }
+    }
+
+    // id de producto -> id de proveedor (para poder hacer pedidos)
+    suspend fun proveedoresPorProducto(): Result<Map<Int, Int>> = withContext(Dispatchers.IO) {
+        try {
+            val a = JSONArray(request("GET", "/productos/publicos"))
+            val m = mutableMapOf<Int, Int>()
+            for (i in 0 until a.length()) {
+                val o = a.getJSONObject(i)
+                m[o.getInt("id")] = o.getInt("proveedor_id")
+            }
+            Result.success(m)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "No se pudieron cargar los productos"))
+        }
+    }
+
+    // ---------- Productos del proveedor ----------
+    suspend fun misProductos(): Result<List<ProductoApi>> = withContext(Dispatchers.IO) {
+        try {
+            val a = JSONArray(request("GET", "/productos/proveedor"))
+            val salida = mutableListOf<ProductoApi>()
+            for (i in 0 until a.length()) {
+                val o = a.getJSONObject(i)
+                val act = o.opt("activo")
+                val activo = act == true || (act is Number && act.toInt() == 1) || act == "1"
+                salida.add(
+                    ProductoApi(
+                        id = o.getInt("id"),
+                        nombre = o.texto("nombre"),
+                        descripcion = o.texto("descripcion"),
+                        precio = o.optDouble("precio"),
+                        stock = o.optDouble("stock"),
+                        activo = activo
+                    )
+                )
+            }
+            Result.success(salida)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "No se pudieron cargar tus productos"))
+        }
+    }
+
+    // id = null crea un producto nuevo; con id, lo actualiza
+    suspend fun guardarProducto(
+        id: Int?, nombre: String, descripcion: String, precio: Double, stock: Double, activo: Boolean
+    ): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val body = JSONObject()
+                .put("nombre", nombre)
+                .put("descripcion", descripcion)
+                .put("precio", precio)
+                .put("stock", stock)
+            if (id == null) {
+                request("POST", "/productos", body)
+            } else {
+                body.put("activo", activo)
+                request("PUT", "/productos/$id", body)
+            }
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "No se pudo guardar el producto"))
+        }
+    }
+    // ---------- Proveedores y catalogo (cliente) ----------
+    private fun JSONObject.txt(k: String): String = if (isNull(k)) "" else optString(k, "")
+
+    suspend fun proveedoresCercanos(municipio: String): Result<List<ProveedorApi>> = withContext(Dispatchers.IO) {
+        try {
+            val ruta = if (municipio.isBlank()) "/proveedores/cercanos"
+            else "/proveedores/cercanos?municipio=" + java.net.URLEncoder.encode(municipio.trim(), "UTF-8")
+            val a = JSONArray(request("GET", ruta))
+            val salida = mutableListOf<ProveedorApi>()
+            for (i in 0 until a.length()) {
+                val o = a.getJSONObject(i)
+                salida.add(ProveedorApi(o.getInt("id"), o.txt("nombre_negocio"), o.txt("descripcion"), o.txt("municipio")))
+            }
+            Result.success(salida)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "No se pudieron cargar los proveedores"))
+        }
+    }
+
+    suspend fun catalogoProveedor(id: Int): Result<List<ProductoApi>> = withContext(Dispatchers.IO) {
+        try {
+            val arr = JSONObject(request("GET", "/proveedores/$id/catalogo")).getJSONArray("productos")
+            val salida = mutableListOf<ProductoApi>()
+            for (i in 0 until arr.length()) {
+                val o = arr.getJSONObject(i)
+                salida.add(
+                    ProductoApi(o.getInt("id"), o.txt("nombre"), o.txt("descripcion"), o.optDouble("precio"), o.optDouble("stock"), true)
+                )
+            }
+            Result.success(salida)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "No se pudo cargar el catalogo"))
+        }
+    }
+    suspend fun cancelarPedido(id: Int): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            request("POST", "/pedidos/$id/cancelar", JSONObject())
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "No se pudo cancelar el pedido"))
+        }
+    }}
