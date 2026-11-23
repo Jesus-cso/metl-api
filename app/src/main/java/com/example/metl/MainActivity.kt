@@ -2,81 +2,64 @@ package com.example.metl
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.TypedValue
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.example.metl.databinding.ActivityMainBinding
 
 enum class Pantalla { PARCELA, DETALLE, MERCADO }
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
 
+    private lateinit var b: ActivityMainBinding
     private val vm: MetlViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        b = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(b.root)
 
-        findViewById<TextView>(R.id.navParcela).setOnClickListener { irA(Pantalla.PARCELA) }
-        findViewById<TextView>(R.id.navMagueyes).setOnClickListener { irA(Pantalla.DETALLE) }
-        findViewById<TextView>(R.id.navMercado).setOnClickListener { irA(Pantalla.MERCADO) }
+        // Los sensores son del proveedor: el cliente no ve esta opción
+        b.nav.menu.findItem(R.id.nav_sensores).isVisible =
+            Session.rol(this).equals("proveedor", ignoreCase = true)
 
-        agregarBotonesProveedor()
+        b.nav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_magueyes -> { mostrar(Pantalla.PARCELA); true }
+                R.id.nav_pedidos -> { abrir(PedidosActivity::class.java); false }
+                R.id.nav_productos -> { abrir(ProductosActivity::class.java); false }
+                R.id.nav_sensores -> { abrir(SensoresActivity::class.java); false }
+                R.id.nav_ajustes -> { abrir(AjustesActivity::class.java); false }
+                else -> false
+            }
+        }
+        b.nav.setOnItemReselectedListener { }
 
         if (savedInstanceState == null) irA(Pantalla.PARCELA)
     }
 
-    // Agrega "Pedidos" y "Salir" a la barra, copiando el estilo de la pestaña Mercado
-    private fun agregarBotonesProveedor() {
-        val modelo = findViewById<TextView>(R.id.navMercado)
-        val padre = modelo.parent as? LinearLayout ?: return
+    private fun abrir(c: Class<*>) = startActivity(Intent(this, c))
 
-        fun clonar(etiqueta: String, accion: () -> Unit): TextView = TextView(this).apply {
-            text = etiqueta
-            layoutParams = LinearLayout.LayoutParams(modelo.layoutParams as LinearLayout.LayoutParams)
-            background = modelo.background?.constantState?.newDrawable()?.mutate()
-            setPadding(modelo.paddingLeft, modelo.paddingTop, modelo.paddingRight, modelo.paddingBottom)
-            gravity = modelo.gravity
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, modelo.textSize)
-            setTextColor(modelo.textColors)
-            typeface = modelo.typeface
-            isClickable = true
-            isFocusable = true
-            setOnClickListener { accion() }
+    /** Lo usan los fragments (ParcelaFragment). */
+    fun irA(p: Pantalla) {
+        if (p == Pantalla.MERCADO) {          // el mercado ya no existe: va a Pedidos
+            abrir(PedidosActivity::class.java)
+            return
         }
-
-        padre.addView(clonar("Productos") {
-            startActivity(Intent(this, ProductosActivity::class.java))
-        })
-        padre.addView(clonar("Pedidos") {
-            startActivity(Intent(this, PedidosActivity::class.java))
-        })
-        padre.addView(clonar("Salir") {
-            Session.cerrar(this)
-            startActivity(
-                Intent(this, LoginActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                }
-            )
-            finish()
-        })
-    }
-
-    fun irA(pantalla: Pantalla) {
-        val fragmento: Fragment = when (pantalla) {
-            Pantalla.PARCELA -> ParcelaFragment()
-            Pantalla.DETALLE -> DetalleFragment()
-            Pantalla.MERCADO -> MercadoFragment()
-        }
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, fragmento)
-            .commit()
+        mostrar(p)
+        b.nav.menu.findItem(R.id.nav_magueyes).isChecked = true   // no dispara el listener
     }
 
     fun abrirMaguey(id: String) {
-        vm.seleccionar(id)      // nombre supuesto, ver abajo
+        vm.seleccionar(id)
         irA(Pantalla.DETALLE)
+    }
+
+    private fun mostrar(p: Pantalla) {
+        val f: Fragment = when (p) {
+            Pantalla.DETALLE -> DetalleFragment()
+            else -> ParcelaFragment()
+        }
+        supportFragmentManager.beginTransaction().replace(R.id.container, f).commit()
     }
 }

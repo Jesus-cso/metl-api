@@ -1,5 +1,6 @@
-﻿package com.example.metl
+package com.example.metl
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
@@ -17,7 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-class ProductosActivity : AppCompatActivity() {
+class ProductosActivity : BaseActivity() {
 
     private val repo by lazy { ApiRepository(applicationContext) }
     private lateinit var lista: LinearLayout
@@ -57,8 +58,8 @@ class ProductosActivity : AppCompatActivity() {
         val titulo = texto("Mis productos", 26f, R.color.ink, true).apply {
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
-        val nuevo = boton("Nuevo") { dialogo(null) }.apply {
-            (this as TextView).let { }
+        val nuevo = boton("Nuevo") {
+            startActivity(Intent(this, PublicarActivity::class.java))
         }
         val volver = boton("Volver") { finish() }
         encabezado.addView(titulo)
