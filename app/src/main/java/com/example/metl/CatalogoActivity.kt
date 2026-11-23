@@ -1,4 +1,4 @@
-package com.example.metl
+﻿package com.example.metl
 
 import android.content.Intent
 import android.os.Bundle
@@ -15,7 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-class CatalogoActivity : BaseActivity() {
+class CatalogoActivity : AppCompatActivity() {
 
     private val repo by lazy { ApiRepository(applicationContext) }
     private val proveedorId by lazy { intent.getIntExtra("proveedor_id", -1) }

@@ -11,8 +11,10 @@ import java.net.URL
 class ApiRepository(private val ctx: Context) : MetlRepository {
 
     companion object {
-        val BASE_URL: String get() = Config.baseUrl
+        // Emulador: 10.0.2.2 es tu PC. Celular real: la IP de tu PC (ipconfig)
+        const val BASE_URL = "http://192.168.0.104:3100"
     }
+
     private val productoDao = ProductoDao(ctx)
     private val magueyDao = MagueyDao(ctx)
     private val lecturaDao = LecturaDao(ctx)

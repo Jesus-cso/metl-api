@@ -64,10 +64,7 @@ class PublicacionAdapter(
         h.btnPedir.isEnabled = hayStock
         h.btnPedir.setOnClickListener { onPedir(p) }
 
-        val url = p.fotoUrl?.let { foto ->
-            if (foto.startsWith("http")) foto
-            else "${Config.baseUrl}/${foto.trimStart('/')}"
-        }
+        val url = p.fotoUrl?.let { if (it.startsWith("http")) it else Config.BASE_URL + it }
         Imagenes.cargar(h.ivFoto, url)
     }
 }

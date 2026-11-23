@@ -15,9 +15,6 @@ object Session {
             .apply()
     }
 
-    fun cambiarNombre(c: Context, nombre: String) =
-        sp(c).edit().putString("nombre", nombre).apply()
-
     fun token(c: Context): String? = sp(c).getString("token", null)
     fun rol(c: Context): String? = sp(c).getString("rol", null)
     fun nombre(c: Context): String = sp(c).getString("nombre", "") ?: ""

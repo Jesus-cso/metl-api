@@ -7,13 +7,14 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-class PedidosActivity : BaseActivity() {
+class PedidosActivity : AppCompatActivity() {
 
     private val repo by lazy { ApiRepository(applicationContext) }
     private val esProveedor by lazy { Session.rol(this) == "proveedor" }
@@ -51,9 +52,6 @@ class PedidosActivity : BaseActivity() {
         val volver = texto("Volver", 14f, R.color.ink, true).apply {
             setBackgroundResource(R.drawable.bg_card)
             setPadding(dp(16), dp(10), dp(16), dp(10))
-            minHeight = dp(48)
-            gravity = Gravity.CENTER_VERTICAL
-            contentDescription = "Volver a la pantalla anterior"
             setOnClickListener { finish() }
         }
         encabezado.addView(titulo)
@@ -95,7 +93,7 @@ class PedidosActivity : BaseActivity() {
             r.onSuccess { pintar(it) }
                 .onFailure {
                     lista.removeAllViews()
-                    vacio.text = mensajeAmigable(it)
+                    vacio.text = it.message ?: "Error al cargar"
                     vacio.visibility = View.VISIBLE
                 }
         }
@@ -160,9 +158,6 @@ class PedidosActivity : BaseActivity() {
             }
             fun boton(t: String, nuevo: String) = Button(this).apply {
                 text = t
-                minHeight = dp(48)
-                minimumHeight = dp(48)
-                contentDescription = "$t pedido #${p.id}"
                 setOnClickListener { cambiar(p.id, nuevo) }
             }
             when (p.estado) {
@@ -177,9 +172,6 @@ class PedidosActivity : BaseActivity() {
         if (!esProveedor && p.estado == "pendiente") {
             card.addView(Button(this).apply {
                 text = "Cancelar pedido"
-                minHeight = dp(48)
-                minimumHeight = dp(48)
-                contentDescription = "Cancelar el pedido #${p.id}"
                 setOnClickListener { confirmarCancelar(p.id) }
             })
         }
@@ -193,8 +185,8 @@ class PedidosActivity : BaseActivity() {
             .setPositiveButton("S\u00ed, cancelar") { _, _ ->
                 lifecycleScope.launch {
                     repo.cancelarPedido(id)
-                        .onSuccess { avisar("Listo, el pedido se actualizó."); cargar() }
-                        .onFailure { avisar(mensajeAmigable(it), importante = true, error = true) }
+                        .onSuccess { cargar() }
+                        .onFailure { Toast.makeText(this@PedidosActivity, it.message ?: "Error", Toast.LENGTH_LONG).show() }
                 }
             }
             .setNegativeButton("No", null)
@@ -203,8 +195,8 @@ class PedidosActivity : BaseActivity() {
     private fun cambiar(id: Int, estado: String) {
         lifecycleScope.launch {
             repo.cambiarEstado(id, estado)
-                .onSuccess { avisar("Listo, el pedido se actualizó."); cargar() }
-                .onFailure { avisar(mensajeAmigable(it), importante = true, error = true) }
+                .onSuccess { cargar() }
+                .onFailure { Toast.makeText(this@PedidosActivity, it.message ?: "Error", Toast.LENGTH_LONG).show() }
         }
     }
 }
