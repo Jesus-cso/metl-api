@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 
 
-class LoginActivity : BaseActivity() {
+class LoginActivity : AppCompatActivity() {
     private val ActivityLoginBinding.tvCrear: Any
         get() {
             TODO()
