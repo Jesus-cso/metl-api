@@ -19,7 +19,7 @@ object MetlGraph {
     lateinit var repo: MetlRepository
         private set
 
-    fun init(context: Context) {
+    fun init(context: Context) { Config.init(context);
         repo = if (USAR_DATOS_DE_EJEMPLO) {
             FakeMetlRepository()
         } else {

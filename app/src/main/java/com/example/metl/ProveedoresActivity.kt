@@ -1,4 +1,4 @@
-﻿package com.example.metl
+package com.example.metl
 
 import android.content.Intent
 import android.os.Bundle
@@ -14,7 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
-class ProveedoresActivity : AppCompatActivity() {
+class ProveedoresActivity : BaseActivity() {
 
     private val repo by lazy { ApiRepository(applicationContext) }
     private lateinit var lista: LinearLayout

@@ -1,4 +1,4 @@
-﻿package com.example.metl
+package com.example.metl
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,7 +9,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.metl.databinding.ActivityRegistroBinding
 
-class RegistroActivity : AppCompatActivity() {
+class RegistroActivity : BaseActivity() {
 
     private lateinit var b: ActivityRegistroBinding
     private val vm: MetlViewModel by viewModels()
